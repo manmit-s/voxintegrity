@@ -1,0 +1,10 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.venv
+venv/
+ml_pipeline/data/raw/*
+ml_pipeline/data/processed/*
+ml_pipeline/weights/*
+!.gitkeep
