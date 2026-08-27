@@ -1,0 +1,56 @@
+name: Backend Deploy (Inactive)
+
+# INACTIVE PIPELINE - manual trigger only, will not run on push/PR
+# To activate, uncomment the push/pull_request sections below.
+"on":
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options: ['staging', 'production']
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'backend/**'
+  #     - '.github/workflows/backend-deploy.yml'
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - 'backend/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Backend (placeholder)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder - pipeline inactive
+        run: |
+          echo "Backend pipeline is INACTIVE (manual dispatch only)."
+          echo "No build/deploy executed. This job always succeeds to keep Actions error-free."
+          echo "To activate: uncomment push/pull_request triggers in on: section."
+
+      # --- Real CI steps (kept as reference, will run only when activated) ---
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.11'
+      #     cache: 'pip'
+      #
+      # - name: Install dependencies
+      #   if: hashFiles('backend/requirements.txt') != ''
+      #   run: pip install -r backend/requirements.txt
+      #
+      # - name: Lint
+      #   run: echo "Add ruff/flake8 here"
+      #
+      # - name: Build Docker image (dry run)
+      #   run: docker build -f backend/Dockerfile -t vaani-kavach-backend:ci backend/
