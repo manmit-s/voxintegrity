@@ -1,0 +1,13 @@
+model:
+  n_mfcc: 40
+  hidden: 128
+  num_classes: 2
+training:
+  batch_size: 32
+  lr: 0.001
+  epochs: 50
+  optimizer: adam
+data:
+  sr: 16000
+  duration: 4.0
+  augment: true
