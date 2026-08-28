@@ -364,11 +364,8 @@ Conflict milega.
 Example:
 
 ```text
-<<<<<<< HEAD
 MODEL = "ResNet50"
-=======
 MODEL = "EfficientNet"
->>>>>>> origin/main
 ```
 
 Ab **tum apni feature branch par conflict resolve karoge**.
