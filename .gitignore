@@ -8,3 +8,6 @@ ml_pipeline/data/raw/*
 ml_pipeline/data/processed/*
 ml_pipeline/weights/*
 !.gitkeep
+
+
+PLAN_manmit.md
