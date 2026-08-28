@@ -1,0 +1,6 @@
+{
+  "model_name": "MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection",
+  "dataset_split": "eval",
+  "accuracy": 0.91,
+  "eer": 0.0508
+}
