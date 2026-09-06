@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     SAMPLE_RATE: int = 16000
     VERDICT_THRESHOLD: float = 0.5
     MODEL_REAL_CLASS_INDEX: int = 0
+    SUPABASE_SERVICE_KEY: str = ""
 
     @property
     def project_root(self) -> Path:
