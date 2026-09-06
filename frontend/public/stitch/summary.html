@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "surface": "#111319",
+        "on-tertiary-container": "#525c69",
+        "on-primary-fixed": "#002114",
+        "surface-container": "#1d2025",
+        "inverse-primary": "#006c4a",
+        "surface-tint": "#00e29e",
+        "on-primary-container": "#006847",
+        "surface-container-lowest": "#0b0e13",
+        "surface-container-low": "#191c21",
+        "error": "#ffb4ab",
+        "tertiary": "#e9f0ff",
+        "outline": "#84958a",
+        "tertiary-container": "#cbd4e4",
+        "on-secondary-container": "#ffb9ac",
+        "on-surface-variant": "#b9cbbf",
+        "inverse-on-surface": "#2e3036",
+        "on-secondary-fixed": "#3f0300",
+        "secondary-container": "#aa1300",
+        "inverse-surface": "#e1e2ea",
+        "surface-container-high": "#272a30",
+        "surface-variant": "#32353b",
+        "on-primary": "#003824",
+        "on-tertiary-fixed-variant": "#3e4755",
+        "on-error": "#690005",
+        "error-container": "#93000a",
+        "outline-variant": "#3b4a41",
+        "secondary": "#ffb4a6",
+        "tertiary-fixed": "#dae3f4",
+        "primary-fixed": "#46ffb8",
+        "primary": "#b7ffd9",
+        "on-tertiary-fixed": "#131c28",
+        "on-tertiary": "#28313d",
+        "primary-fixed-dim": "#00e29e",
+        "primary-container": "#00f0a8",
+        "surface-dim": "#111319",
+        "on-secondary-fixed-variant": "#900e00",
+        "background": "#111319",
+        "secondary-fixed": "#ffdad4",
+        "on-secondary": "#660700",
+        "on-background": "#e1e2ea",
+        "tertiary-fixed-dim": "#bec7d7",
+        "on-error-container": "#ffdad6",
+        "on-surface": "#e1e2ea",
+        "surface-bright": "#36393f",
+        "on-primary-fixed-variant": "#005236",
+        "secondary-fixed-dim": "#ffb4a6",
+        "surface-container-highest": "#32353b"
+      },
+      "borderRadius": {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      "spacing": {
+        "scale-6": "1.5rem",
+        "scale-1": "0.125rem",
+        "scale-3": "0.5rem",
+        "instrument-margin": "2rem",
+        "chamber-padding": "1.25rem",
+        "scale-4": "0.75rem",
+        "scale-2": "0.25rem",
+        "reticle-gutter": "0.75rem",
+        "scale-5": "1rem",
+        "scale-7": "2rem",
+        "scale-8": "3rem"
+      },
+      "fontFamily": {
+        "label-caps": [
+          "JetBrains Mono"
+        ],
+        "telemetry-sm": [
+          "JetBrains Mono"
+        ],
+        "telemetry-lg": [
+          "JetBrains Mono"
+        ],
+        "verdict-xl-mobile": [
+          "Space Grotesk"
+        ],
+        "telemetry-micro": [
+          "JetBrains Mono"
+        ],
+        "headline-lg": [
+          "Space Grotesk"
+        ],
+        "verdict-xl": [
+          "Space Grotesk"
+        ],
+        "telemetry-base": [
+          "JetBrains Mono"
+        ],
+        "headline-sm": [
+          "Space Grotesk"
+        ],
+        "body-base": [
+          "JetBrains Mono"
+        ]
+      },
+      "fontSize": {
+        "label-caps": [
+          "11px",
+          {
+            "lineHeight": "14px",
+            "letterSpacing": "0.12em",
+            "fontWeight": "600"
+          }
+        ],
+        "telemetry-sm": [
+          "13px",
+          {
+            "lineHeight": "18px",
+            "letterSpacing": "0.01em",
+            "fontWeight": "400"
+          }
+        ],
+        "telemetry-lg": [
+          "28px",
+          {
+            "lineHeight": "32px",
+            "letterSpacing": "-0.02em",
+            "fontWeight": "600"
+          }
+        ],
+        "verdict-xl-mobile": [
+          "32px",
+          {
+            "lineHeight": "38px",
+            "letterSpacing": "-0.02em",
+            "fontWeight": "700"
+          }
+        ],
+        "telemetry-micro": [
+          "10px",
+          {
+            "lineHeight": "14px",
+            "letterSpacing": "0.08em",
+            "fontWeight": "500"
+          }
+        ],
+        "headline-lg": [
+          "24px",
+          {
+            "lineHeight": "30px",
+            "letterSpacing": "-0.02em",
+            "fontWeight": "600"
+          }
+        ],
+        "verdict-xl": [
+          "48px",
+          {
+            "lineHeight": "52px",
+            "letterSpacing": "-0.03em",
+            "fontWeight": "700"
+          }
+        ],
+        "telemetry-base": [
+          "15px",
+          {
+            "lineHeight": "20px",
+            "letterSpacing": "0em",
+            "fontWeight": "500"
+          }
+        ],
+        "headline-sm": [
+          "18px",
+          {
+            "lineHeight": "24px",
+            "letterSpacing": "-0.01em",
+            "fontWeight": "500"
+          }
+        ],
+        "body-base": [
+          "14px",
+          {
+            "lineHeight": "22px",
+            "letterSpacing": "-0.01em",
+            "fontWeight": "400"
+          }
+        ]
+      }
+    }
+  }
+}</script></head><body class="bg-surface-container-lowest font-body-base text-on-surface antialiased select-none min-h-screen flex flex-col justify-between"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-md border-b border-surface-container-high/60"><div class="h-16 w-full px-scale-6 flex items-center justify-between"><div class="flex items-center gap-scale-4"><div class="bg-surface-container-high px-scale-3 py-scale-1 flex items-center gap-scale-2"><span class="w-1.5 h-1.5 bg-primary-container"></span><span class="font-label-caps text-label-caps text-primary-container tracking-widest uppercase">VAANI KAVACH</span></div><div class="hidden md:flex flex-col"><span class="font-telemetry-micro text-telemetry-micro uppercase text-on-surface-variant">Voice Deepfake Detection Platform</span></div></div><div class="hidden lg:flex items-center gap-scale-6"><nav class="flex items-center gap-scale-2" data-active-classes="bg-surface-container-high text-primary-container font-semibold"><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface px-scale-3 py-scale-1 uppercase transition-colors" data-path="signal-forensics" href="#">Live Scope</a><a class="font-label-caps text-label-caps text-on-surface-variant hover:text-on-surface px-scale-3 py-scale-1 uppercase transition-colors" data-path="batch-classifier" href="#">Batch Triage</a><a aria-current="page" class="px-scale-3 py-scale-1 uppercase transition-colors bg-surface-container-high text-primary-container font-semibold font-label-caps text-label-caps" data-path="verdict-summary" href="#">Session Summary</a></nav></div><div class="flex items-center gap-scale-4"><div class="flex items-center gap-scale-2"><span class="w-2 h-2 rounded-full bg-primary-container"></span><span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant uppercase">Ready</span></div><div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-surface-variant"><span class="material-symbols-outlined text-on-surface text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 pb-12 bg-surface-container-lowest flex-1"><div class="max-w-6xl mx-auto px-instrument-margin space-y-scale-6">
+<!-- Header Section: Clean & Purposeful -->
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-scale-4 border-b border-surface-container-high/60 pb-scale-4">
+<div>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider block mb-scale-1">SESSION ANALYSIS RESULT</span>
+<h1 class="font-verdict-xl text-[36px] md:text-verdict-xl text-on-surface uppercase tracking-tight">Audio Analysis Summary</h1>
+</div>
+<div class="flex items-center gap-scale-3">
+<div class="px-scale-3 py-scale-2 bg-surface-container-low border border-surface-container-high flex items-center gap-scale-2">
+<span class="font-telemetry-micro text-telemetry-micro text-outline uppercase">Processed:</span>
+<span class="font-telemetry-sm text-telemetry-sm text-on-surface font-mono">16kHz Audio Stream</span>
+</div>
+</div>
+</div>
+<!-- Authoritative Verdict Unit -->
+<div class="w-full bg-surface-container-low border border-surface-container-high p-scale-6 md:p-scale-7">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-scale-6 items-center">
+<!-- Verdict Description -->
+<div class="lg:col-span-8 flex flex-col gap-scale-3">
+<div class="flex items-center gap-scale-2">
+<span class="bg-secondary/15 text-secondary border border-secondary/40 px-scale-3 py-scale-1 font-label-caps text-label-caps uppercase font-semibold flex items-center gap-scale-2"><span class="material-symbols-outlined text-[15px]">warning</span> Likely Synthetic Voice Detected</span>
+</div>
+<div class="py-scale-1">
+<h2 class="font-headline-lg text-headline-lg md:text-[28px] text-on-surface tracking-tight font-semibold">
+High Probability of Synthetic Speech
+</h2>
+</div>
+<p class="font-body-base text-body-base text-on-surface-variant max-w-2xl leading-relaxed">
+The analyzed audio segment exhibits acoustic characteristics strongly consistent with synthetic or voice-cloned generation across the majority of analyzed temporal windows.
+</p>
+</div>
+<!-- Primary Confidence Score Gauge -->
+<div class="lg:col-span-4 flex flex-col items-center justify-center p-scale-6 bg-surface-container-lowest border border-surface-container-high">
+<div class="w-full flex items-center justify-between mb-scale-2">
+<span class="font-label-caps text-label-caps text-outline uppercase">Model Confidence</span>
+<span class="font-label-caps text-label-caps text-secondary font-semibold">Flagged</span>
+</div>
+<div class="relative flex items-center justify-center my-scale-2">
+<svg class="w-36 h-36 -rotate-90 transform" viewbox="0 0 120 120">
+<circle cx="60" cy="60" fill="none" r="50" stroke="#1d2025" stroke-dasharray="314" stroke-dashoffset="0" stroke-width="8"></circle>
+<circle cx="60" cy="60" fill="none" r="50" stroke="#f59e0b" stroke-dasharray="314" stroke-dashoffset="16.3" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center">
+<span class="font-telemetry-lg text-telemetry-lg text-secondary font-bold tracking-tight">95%</span>
+<span class="font-telemetry-micro text-telemetry-micro text-outline uppercase tracking-wider">Spoof Probability</span>
+</div>
+</div>
+<div class="w-full text-center mt-scale-2">
+<span class="font-telemetry-sm text-telemetry-sm text-on-surface font-mono">Softmax Score: 0.948</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Real Verifiable Session Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-scale-4">
+<div class="bg-surface-container-low border border-surface-container-high p-scale-4 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-scale-2">
+<span class="font-telemetry-micro text-telemetry-micro text-outline uppercase tracking-wider">Total Duration</span>
+<span class="material-symbols-outlined text-outline text-[18px]">timer</span>
+</div>
+<div class="font-telemetry-lg text-telemetry-lg text-on-surface font-mono">00:24.75</div>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant mt-scale-1">Total audio length</span>
+</div>
+<div class="bg-surface-container-low border border-surface-container-high p-scale-4 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-scale-2">
+<span class="font-telemetry-micro text-telemetry-micro text-outline uppercase tracking-wider">Windows Analyzed</span>
+<span class="material-symbols-outlined text-outline text-[18px]">view_timeline</span>
+</div>
+<div class="font-telemetry-lg text-telemetry-lg text-on-surface font-mono">99 Windows</div>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant mt-scale-1">250ms stride, 50% overlap</span>
+</div>
+<div class="bg-surface-container-low border border-surface-container-high p-scale-4 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-scale-2">
+<span class="font-telemetry-micro text-telemetry-micro text-outline uppercase tracking-wider">Peak Window Score</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">priority_high</span>
+</div>
+<div class="font-telemetry-lg text-telemetry-lg text-secondary font-mono">0.96</div>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant mt-scale-1">Window #62 (15.5s)</span>
+</div>
+<div class="bg-surface-container-low border border-surface-container-high p-scale-4 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-scale-2">
+<span class="font-telemetry-micro text-telemetry-micro text-outline uppercase tracking-wider">Mean Spoof Score</span>
+<span class="material-symbols-outlined text-outline text-[18px]">analytics</span>
+</div>
+<div class="font-telemetry-lg text-telemetry-lg text-secondary font-mono">0.81</div>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant mt-scale-1">Classification threshold: 0.70</span>
+</div>
+</div>
+<!-- Clean Session Score Distribution -->
+<div class="bg-surface-container-low border border-surface-container-high p-scale-5 space-y-scale-4">
+<div class="flex flex-wrap items-center justify-between gap-scale-3">
+<div>
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider block">Temporal Analysis</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Window Score Distribution</h3>
+</div>
+<div class="flex items-center gap-scale-4"><div class="flex items-center gap-scale-2"><span class="text-secondary text-[11px]">▲</span><span class="w-2.5 h-2.5 rounded-sm bg-secondary"></span><span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">Synthetic (&gt; 0.70)</span></div><div class="flex items-center gap-scale-2"><span class="text-primary-container text-[11px]">●</span><span class="w-2.5 h-2.5 rounded-sm bg-primary-container"></span><span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant">Genuine (≤ 0.70)</span></div></div>
+</div>
+<!-- Score Distribution Visualizer -->
+<div class="relative bg-surface-container-lowest border border-surface-container-high p-scale-4 h-56 flex flex-col justify-between">
+<div class="absolute inset-x-0 top-[30%] border-t border-dashed border-outline/50 z-10"></div>
+<div class="absolute right-3 top-[22%] font-telemetry-micro text-telemetry-micro text-outline font-mono z-10 bg-surface-container-lowest px-1 border border-surface-container-high/60">Threshold (0.70)</div>
+<div class="relative z-10 h-full flex items-end justify-between gap-[2px] pt-scale-6 pb-scale-2">
+<div class="w-full bg-primary-container/80 h-[32%]" title="Window 1: 0.32"></div>
+<div class="w-full bg-primary-container/80 h-[28%]" title="Window 2: 0.28"></div>
+<div class="w-full bg-primary-container/80 h-[35%]" title="Window 3: 0.35"></div>
+<div class="w-full bg-primary-container/80 h-[40%]" title="Window 4: 0.40"></div>
+<div class="w-full bg-primary-container/80 h-[42%]" title="Window 5: 0.42"></div>
+<div class="w-full bg-primary-container/80 h-[39%]" title="Window 6: 0.39"></div>
+<div class="w-full bg-primary-container/80 h-[50%]" title="Window 7: 0.50"></div>
+<div class="w-full bg-primary-container/80 h-[62%]" title="Window 8: 0.62"></div>
+<div class="w-full bg-primary-container/80 h-[58%]" title="Window 9: 0.58"></div>
+<div class="w-full bg-primary-container/80 h-[45%]" title="Window 10: 0.45"></div>
+<div class="w-full bg-primary-container/80 h-[51%]" title="Window 11: 0.51"></div>
+<div class="w-full bg-primary-container/80 h-[49%]" title="Window 12: 0.49"></div>
+<div class="w-full bg-primary-container/80 h-[55%]" title="Window 13: 0.55"></div>
+<div class="w-full bg-primary-container/80 h-[61%]" title="Window 14: 0.61"></div>
+<div class="w-full bg-primary-container/80 h-[65%]" title="Window 15: 0.65"></div>
+<div class="w-full bg-primary-container/80 h-[68%]" title="Window 16: 0.68"></div>
+<div class="w-full bg-primary-container/80 h-[64%]" title="Window 17: 0.64"></div>
+<div class="w-full bg-primary-container/80 h-[69%]" title="Window 18: 0.69"></div>
+<div class="w-full bg-secondary h-[74%]" title="Window 19: 0.74"></div>
+<div class="w-full bg-secondary h-[78%]" title="Window 20: 0.78"></div>
+<div class="w-full bg-secondary h-[81%]" title="Window 21: 0.81"></div>
+<div class="w-full bg-secondary h-[85%]" title="Window 22: 0.85"></div>
+<div class="w-full bg-secondary h-[89%]" title="Window 23: 0.89"></div>
+<div class="w-full bg-secondary h-[88%]" title="Window 24: 0.88"></div>
+<div class="w-full bg-secondary h-[84%]" title="Window 25: 0.84"></div>
+<div class="w-full bg-secondary h-[91%]" title="Window 26: 0.91"></div>
+<div class="w-full bg-secondary h-[92%]" title="Window 27: 0.92"></div>
+<div class="w-full bg-secondary h-[87%]" title="Window 28: 0.87"></div>
+<div class="w-full bg-secondary h-[79%]" title="Window 29: 0.79"></div>
+<div class="w-full bg-secondary h-[83%]" title="Window 30: 0.83"></div>
+<div class="w-full bg-secondary h-[86%]" title="Window 31: 0.86"></div>
+<div class="w-full bg-secondary h-[89%]" title="Window 32: 0.89"></div>
+<div class="w-full bg-secondary h-[93%]" title="Window 33: 0.93"></div>
+<div class="w-full bg-secondary h-[90%]" title="Window 34: 0.90"></div>
+<div class="w-full bg-secondary h-[88%]" title="Window 35: 0.88"></div>
+<div class="w-full bg-secondary h-[82%]" title="Window 36: 0.82"></div>
+<div class="w-full bg-secondary h-[85%]" title="Window 37: 0.85"></div>
+<div class="w-full bg-secondary h-[89%]" title="Window 38: 0.89"></div>
+<div class="w-full bg-secondary h-[94%]" title="Window 39: 0.94"></div>
+<div class="w-full bg-secondary h-[91%]" title="Window 40: 0.91"></div>
+<div class="w-full bg-secondary h-[87%]" title="Window 41: 0.87"></div>
+<div class="w-full bg-secondary h-[83%]" title="Window 42: 0.83"></div>
+<div class="w-full bg-secondary h-[80%]" title="Window 43: 0.80"></div>
+<div class="w-full bg-secondary h-[76%]" title="Window 44: 0.76"></div>
+<div class="w-full bg-secondary h-[73%]" title="Window 45: 0.73"></div>
+<div class="w-full bg-primary-container/80 h-[54%]" title="Window 46: 0.54"></div>
+<div class="w-full bg-primary-container/80 h-[48%]" title="Window 47: 0.48"></div>
+<div class="w-full bg-primary-container/80 h-[42%]" title="Window 48: 0.42"></div>
+<div class="w-full bg-primary-container/80 h-[50%]" title="Window 49: 0.50"></div>
+<div class="w-full bg-primary-container/80 h-[62%]" title="Window 50: 0.62"></div>
+<div class="w-full bg-primary-container/80 h-[68%]" title="Window 51: 0.68"></div>
+<div class="w-full bg-secondary h-[72%]" title="Window 52: 0.72"></div>
+<div class="w-full bg-secondary h-[79%]" title="Window 53: 0.79"></div>
+<div class="w-full bg-secondary h-[84%]" title="Window 54: 0.84"></div>
+<div class="w-full bg-secondary h-[88%]" title="Window 55: 0.88"></div>
+<div class="w-full bg-secondary h-[91%]" title="Window 56: 0.91"></div>
+<div class="w-full bg-secondary h-[93%]" title="Window 57: 0.93"></div>
+<div class="w-full bg-secondary h-[95%]" title="Window 58: 0.95"></div>
+<div class="w-full bg-secondary h-[94%]" title="Window 59: 0.94"></div>
+<div class="w-full bg-secondary h-[95%]" title="Window 60: 0.95"></div>
+<div class="w-full bg-secondary h-[96%]" title="Window 61: 0.96"></div>
+<div class="w-full bg-secondary h-[99%]" title="Window 62: 0.96 (Peak)"></div>
+<div class="w-full bg-secondary h-[95%]" title="Window 63: 0.95"></div>
+<div class="w-full bg-secondary h-[93%]" title="Window 64: 0.93"></div>
+<div class="w-full bg-secondary h-[91%]" title="Window 65: 0.91"></div>
+<div class="w-full bg-secondary h-[92%]" title="Window 66: 0.92"></div>
+<div class="w-full bg-secondary h-[94%]" title="Window 67: 0.94"></div>
+<div class="w-full bg-secondary h-[90%]" title="Window 68: 0.90"></div>
+<div class="w-full bg-secondary h-[88%]" title="Window 69: 0.88"></div>
+<div class="w-full bg-secondary h-[86%]" title="Window 70: 0.86"></div>
+<div class="w-full bg-secondary h-[84%]" title="Window 71: 0.84"></div>
+<div class="w-full bg-secondary h-[82%]" title="Window 72: 0.82"></div>
+<div class="w-full bg-secondary h-[85%]" title="Window 73: 0.85"></div>
+<div class="w-full bg-secondary h-[89%]" title="Window 74: 0.89"></div>
+<div class="w-full bg-secondary h-[87%]" title="Window 75: 0.87"></div>
+<div class="w-full bg-secondary h-[85%]" title="Window 76: 0.85"></div>
+<div class="w-full bg-secondary h-[81%]" title="Window 77: 0.81"></div>
+<div class="w-full bg-secondary h-[84%]" title="Window 78: 0.84"></div>
+<div class="w-full bg-secondary h-[86%]" title="Window 79: 0.86"></div>
+<div class="w-full bg-secondary h-[89%]" title="Window 80: 0.89"></div>
+<div class="w-full bg-secondary h-[92%]" title="Window 81: 0.92"></div>
+<div class="w-full bg-secondary h-[90%]" title="Window 82: 0.90"></div>
+<div class="w-full bg-secondary h-[86%]" title="Window 83: 0.86"></div>
+<div class="w-full bg-secondary h-[84%]" title="Window 84: 0.84"></div>
+<div class="w-full bg-secondary h-[80%]" title="Window 85: 0.80"></div>
+<div class="w-full bg-secondary h-[79%]" title="Window 86: 0.79"></div>
+<div class="w-full bg-secondary h-[81%]" title="Window 87: 0.81"></div>
+<div class="w-full bg-secondary h-[85%]" title="Window 88: 0.85"></div>
+<div class="w-full bg-secondary h-[87%]" title="Window 89: 0.87"></div>
+<div class="w-full bg-secondary h-[84%]" title="Window 90: 0.84"></div>
+<div class="w-full bg-secondary h-[80%]" title="Window 91: 0.80"></div>
+<div class="w-full bg-secondary h-[78%]" title="Window 92: 0.78"></div>
+<div class="w-full bg-secondary h-[75%]" title="Window 93: 0.75"></div>
+<div class="w-full bg-secondary h-[77%]" title="Window 94: 0.77"></div>
+<div class="w-full bg-secondary h-[79%]" title="Window 95: 0.79"></div>
+<div class="w-full bg-secondary h-[74%]" title="Window 96: 0.74"></div>
+<div class="w-full bg-secondary h-[72%]" title="Window 97: 0.72"></div>
+<div class="w-full bg-primary-container/80 h-[68%]" title="Window 98: 0.68"></div>
+<div class="w-full bg-primary-container/80 h-[61%]" title="Window 99: 0.61"></div>
+</div>
+<div class="w-full flex justify-between font-telemetry-micro text-telemetry-micro text-outline pt-scale-1">
+<span>00:00</span>
+<span>00:06</span>
+<span>00:15 (Peak)</span>
+<span>00:20</span>
+<span>00:24.75</span>
+</div>
+</div>
+<div class="flex items-center justify-between text-telemetry-micro text-on-surface-variant font-mono pt-scale-1">
+<span>73 of 99 windows flagged above 0.70 cutoff (73.7%)</span>
+<span>Sample Rate: 16kHz Mono</span>
+</div>
+</div>
+<!-- Primary Action Bar -->
+<div class="w-full bg-surface-container-low border border-surface-container-high p-scale-5 flex flex-col sm:flex-row items-center justify-between gap-scale-4">
+<div class="text-telemetry-sm text-outline">
+Analysis complete for session audio stream.
+</div>
+<div class="flex flex-wrap items-center gap-scale-3 w-full sm:w-auto">
+<button class="flex-1 sm:flex-initial flex items-center justify-center gap-scale-2 bg-surface-container-high hover:bg-surface-bright px-scale-4 py-scale-3 text-on-surface font-label-caps text-label-caps uppercase tracking-wider transition-colors border border-surface-variant" id="btn-export-telemetry">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">download</span>
+<span>Export Session Data (.JSON / .CSV)</span>
+</button>
+<button class="w-full sm:w-auto flex items-center justify-center gap-scale-2 bg-primary-container hover:bg-primary text-on-primary-container font-label-caps text-label-caps uppercase tracking-wider font-bold px-scale-5 py-scale-3 transition-colors shadow-sm" id="btn-analyze-new">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Analyze New Audio</span>
+</button>
+</div>
+</div>
+<!-- Notification Toast -->
+<div class="fixed bottom-scale-6 right-scale-6 bg-surface-container-high border border-surface-variant p-scale-4 shadow-xl flex items-center gap-scale-3 translate-y-24 opacity-0 transition-all duration-300 z-50 rounded" id="toast-notify">
+<span class="w-2 h-2 bg-primary-container rounded-full"></span>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface font-semibold" id="toast-title">Notice</span>
+<span class="font-telemetry-micro text-telemetry-micro text-on-surface-variant font-mono" id="toast-msg">Action processed.</span>
+</div>
+</div>
+</div></main>
+<footer class="w-full border-t border-surface-container-high/60 bg-surface-container-lowest py-scale-3 px-scale-6 text-on-surface-variant"><div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-scale-3"><div class="flex items-center gap-scale-2 font-telemetry-micro text-telemetry-micro"><span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span><span>Vaani Kavach Audio Verification</span></div><div class="font-telemetry-micro text-telemetry-micro text-outline">16kHz PCM Analysis Engine</div></div></footer>
+<script>
+    (function initVerdictConsole() {
+      const toast = document.getElementById('toast-notify');
+      const toastTitle = document.getElementById('toast-title');
+      const toastMsg = document.getElementById('toast-msg');
+      let toastTimeout;
+
+      function triggerToast(title, msg) {
+        if (!toast) return;
+        toastTitle.textContent = title;
+        toastMsg.textContent = msg;
+        toast.classList.remove('translate-y-24', 'opacity-0');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.add('translate-y-24', 'opacity-0');
+        }, 3000);
+      }
+
+      document.getElementById('btn-export-telemetry')?.addEventListener('click', () => {
+        triggerToast('Export Ready', 'Session metrics and window scores exported as JSON and CSV.');
+      });
+
+      document.getElementById('btn-analyze-new')?.addEventListener('click', () => {
+        triggerToast('Ready', 'Upload or stream new audio file to begin analysis.');
+      });
+    })();
+  </script>
+</body></html>
