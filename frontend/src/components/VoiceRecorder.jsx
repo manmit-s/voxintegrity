@@ -1,20 +1,11 @@
-import { useState } from 'react'
-import { verifyVoice } from '../services/api'
+import React, { useRef, useState } from 'react'
 
-export default function VoiceRecorder() {
-  const [result, setResult] = useState(null)
-  const handleUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    const fd = new FormData()
-    fd.append('file', file)
-    const { data } = await verifyVoice(fd)
-    setResult(data)
+export default function VoiceRecorder({ onCapture }) {
+  const inputRef = useRef(null)
+  const [selected, setSelected] = useState(null)
+  const handleUpload = (event) => {
+    const nextFile = event.target.files?.[0]
+    if (nextFile) setSelected(nextFile)
   }
-  return (
-    <div>
-      <input type='file' accept='audio/*' onChange={handleUpload} />
-      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
-    </div>
-  )
+  return <div className="recorder"><input ref={inputRef} className="visually-hidden" type="file" accept="audio/*" onChange={handleUpload} /><button className="primary-button capture-button" onClick={() => selected ? onCapture(selected) : inputRef.current?.click()}>{selected ? 'START ANALYSIS' : 'SELECT AUDIO SAMPLE'} <span>{selected ? '→' : '+'}</span></button>{selected && <button className="file-chip" onClick={() => inputRef.current?.click()}>{selected.name} <span>{(selected.size / 1024 / 1024).toFixed(2)} MB</span></button>}</div>
 }
