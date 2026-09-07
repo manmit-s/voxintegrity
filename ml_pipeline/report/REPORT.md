@@ -10,9 +10,11 @@ The machine-learning work follows a sensible progression:
 4. Test how well the ASVspoof-trained model works on a different, more realistic deepfake-audio dataset.
 5. Adapt the model to that new domain using transfer learning.
 
-The initial pretrained AST model reported **91.00% accuracy** and **5.08% EER** on the ASVspoof evaluation setup. When the ASVspoof fine-tuned model was used directly on the Gary Stafford dataset, its default 0.50 threshold produced only **53.05% accuracy**, although its **81.55% ROC-AUC** showed that it still learned useful ranking information. Calibrating the decision threshold improved the reported accuracy to **78.67%**.
+The initial pretrained AST model reported **91.00% accuracy** and **5.08% EER** on the ASVspoof evaluation setup. Fine-Tune A was then evaluated on the ASVspoof development set and achieved **99.19% accuracy**, **96.09% balanced accuracy**, **99.94% ROC-AUC**, and **0.91% EER** across **24,844 samples**. Its confusion matrix shows **3 missed spoof samples** and **199 bonafide samples incorrectly flagged as spoof**.
 
-The strongest reported result came from fine-tuning only the classifier head on the Gary Stafford data: **84.49% accuracy** and **97.94% ROC-AUC** on the notebook's validation split. These results are promising, but they should be treated as reported experiment results rather than fully reproducible measurements because the notebooks do not contain saved execution outputs and some referenced artifacts are external.
+When the ASVspoof fine-tuned model was used directly on the Gary Stafford dataset, its default 0.50 threshold produced only **53.05% accuracy**, although its **81.55% ROC-AUC** showed that it still learned useful ranking information. Calibrating the decision threshold improved the reported accuracy to **78.67%**. The strongest reported cross-domain result came from fine-tuning only the classifier head on the Gary Stafford data: **84.49% accuracy** and **97.94% ROC-AUC** on the notebook's validation split.
+
+The Fine-Tune A metrics in this report are taken from the supplied final development-evaluation PDF. The raw prediction file and saved notebook outputs are still not present in the repository, so the values are documented and internally consistent but cannot yet be regenerated directly from the checked-in artifacts.
 
 ## 2. Problem Definition
 
@@ -108,13 +110,13 @@ The training configuration uses:
 
 The loop reports loss and accuracy while training and saves model and optimizer checkpoints. A later notebook expects a checkpoint named `ast_epoch1_batch6000.pt`.
 
-No saved output confirms the final training accuracy, loss, dataset size, or successful completion of that exact checkpoint. The notebook also has no active validation loop, so this stage establishes a training checkpoint rather than a complete generalization evaluation.
+This notebook is the training stage, so its purpose is to produce the fine-tuned checkpoint rather than to establish the final dev-set metrics. The supplied Fine-Tune A evaluation confirms that the resulting checkpoint was subsequently evaluated successfully, but the PDF does not provide the training loss curve, final training accuracy, or checkpoint-generation logs.
 
 ### 4.4 Checkpoint evaluation and export - `04_finetuning_evaluation.ipynb`
 
 The fourth notebook prepares the ASVspoof development set and loads the fine-tuned checkpoint. It recreates the same 16 kHz, mono, 4-second preprocessing so that training and inference use a consistent input format.
 
-The development evaluation loop exists, but it is commented out. Therefore, the notebook as written does not actively generate the development predictions required by the next results notebook.
+The development evaluation loop exists, but it is commented out in the checked-in notebook. The final Fine-Tune A PDF nevertheless provides the resulting development evaluation, indicating that the evaluation was run in an execution context or version of the notebook not preserved in the repository. This distinction matters: the result is available as an evaluation artifact, while the exact command sequence that generated it is not currently reproducible from the checked-in notebook alone.
 
 The notebook exports the model into deployment-friendly formats:
 
@@ -125,11 +127,11 @@ The notebook exports the model into deployment-friendly formats:
 
 **ONNX** is an interchange format that allows a model trained in one framework to run in other inference environments. The notebook checks the ONNX graph and compares PyTorch and ONNX logits using `np.allclose`.
 
-The ONNX export uses opset 14, a dynamic batch dimension, and an input shape of `[1, 1024, 128]`. The notebooks do not preserve the numerical export comparison or model file sizes in their outputs.
+The ONNX export uses opset 14, a dynamic batch dimension, and an input shape of `[1, 1024, 128]`. The notebooks do not preserve the numerical export comparison or model file sizes in their outputs. The supplied Fine-Tune A metrics should therefore be interpreted as evaluation of the exported/fine-tuned pipeline, not as evidence that every export validation step can be reproduced from the repository today.
 
 ### 4.5 First fine-tuning results - `05_finetuning_results.ipynb`
 
-The fifth notebook is designed to analyze predictions saved in `dev_eval_A_checkpoint.npz`. It calculates a broad set of metrics:
+The fifth notebook analyzes predictions saved in `dev_eval_A_checkpoint.npz`. It calculates a broad set of metrics:
 
 - Accuracy
 - Balanced accuracy
@@ -152,7 +154,31 @@ The fifth notebook is designed to analyze predictions saved in `dev_eval_A_check
 
 **MCC** summarizes all four confusion-matrix outcomes and is useful when class balance or error types make accuracy misleading.
 
-The required `.npz` prediction file is not present in the workspace, and no saved outputs are included. Consequently, exact Fine-Tune A metrics cannot be independently confirmed from the repository.
+The supplied final Fine-Tune A development-evaluation PDF provides the metrics produced by this analysis. The evaluation covers **24,844 samples**: **2,548 bonafide** and **22,296 spoof** recordings.
+
+#### Fine-Tune A final development evaluation
+
+| Metric | Value |
+| --- | ---: |
+| Accuracy | **99.19%** |
+| Balanced accuracy | **96.09%** |
+| Precision | **99.12%** |
+| Recall | **99.99%** |
+| F1 score | **99.55%** |
+| MCC | **0.9552** |
+| ROC-AUC | **99.94%** |
+| EER | **0.91%** |
+
+The corresponding confusion matrix is:
+
+| Actual class | Predicted bonafide | Predicted spoof |
+| --- | ---: | ---: |
+| Bonafide | **2,349** | **199** |
+| Spoof | **3** | **22,293** |
+
+Using spoof as the positive class, the error rates are **FAR = 0.01%** for spoof audio accepted as bonafide and **FRR = 7.81%** for bonafide audio rejected as spoof. The model therefore shows extremely strong spoof recall and a very low spoof false-acceptance rate, while the higher FRR indicates that the main remaining risk is falsely flagging genuine speech.
+
+The raw `dev_eval_A_checkpoint.npz` file is not present in the workspace, so the PDF-backed values cannot yet be independently regenerated from the repository. The PDF should be retained alongside the prediction artifact in a future reproducibility update.
 
 ### 4.6 Cross-domain evaluation - `06_evaluate_ast_model_on_gary_stafford_dataset.ipynb`
 
@@ -211,13 +237,14 @@ There is one important implementation issue: the code tracks the best validation
 
 ## 5. What the Results Mean
 
-The experiments show three separate lessons:
+The experiments show four separate lessons:
 
 1. The pretrained AST model is effective on ASVspoof-style audio.
-2. Directly applying that model to a different audio domain causes a large threshold and calibration problem.
-3. Even limited domain-specific training of the classifier head substantially improves separation on the Gary Stafford validation split.
+2. Fine-Tune A substantially improves the ASVspoof development result, reaching **99.19% accuracy** and **99.94% ROC-AUC** with only **3 spoof misses** out of 22,296 spoof samples.
+3. Directly applying that model to a different audio domain causes a large threshold and calibration problem.
+4. Even limited domain-specific training of the classifier head substantially improves separation on the Gary Stafford validation split.
 
-The increase from 81.55% to 97.94% ROC-AUC suggests that the pretrained AST representation contains useful general audio information and that the classifier can be adapted to the new domain. However, the validation split comes from the same source dataset used for fine-tuning, so it does not prove performance on unseen platforms, speakers, codecs, or deepfake generators.
+The increase from 81.55% to 97.94% ROC-AUC suggests that the pretrained AST representation contains useful general audio information and that the classifier can be adapted to the new domain. The Fine-Tune A result is strong on the ASVspoof development distribution, but it does not prove performance on unseen platforms, speakers, codecs, or deepfake generators. Similarly, the Gary Stafford validation split comes from the same source dataset used for fine-tuning, so it should not be treated as an independent production estimate.
 
 ## 6. Current Progress Summary
 
@@ -226,6 +253,7 @@ The increase from 81.55% to 97.94% ROC-AUC suggests that the pretrained AST repr
 - ASVspoof audio and label exploration.
 - Pretrained AST baseline evaluation.
 - ASVspoof fine-tuning code and checkpointing.
+- Fine-Tune A development evaluation documented: 24,844 samples, 99.19% accuracy, 99.94% ROC-AUC, and 0.91% EER.
 - PyTorch and ONNX export path.
 - Cross-domain evaluation on Gary Stafford data.
 - Threshold calibration experiment.
@@ -234,7 +262,7 @@ The increase from 81.55% to 97.94% ROC-AUC suggests that the pretrained AST repr
 
 ### Incomplete or requiring verification
 
-- Persisted notebook outputs are missing, so several reported numbers cannot be independently reproduced from the notebooks alone.
+- Persisted notebook outputs and the raw Fine-Tune A prediction file are missing, so the PDF-backed metrics cannot yet be independently regenerated from the repository.
 - The ASVspoof development evaluation loop is commented out.
 - `dev_eval_A_checkpoint.npz` is not available in the repository.
 - Training and validation results should be regenerated and saved as artifacts.
