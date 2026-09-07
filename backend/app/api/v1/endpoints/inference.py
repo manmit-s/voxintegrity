@@ -16,6 +16,7 @@ from app.core.security import get_current_user
 from app.db.supabase import supabase
 from app.ml_integration.preprocessor import preprocess_audio
 from app.ml_integration.model_loader import get_model, get_model_name
+from app.schemas.inference import FinalSummary, StreamDone, StreamScoreEvent, StreamStarted, VerifyVoiceResponse
 
 router = APIRouter()
 
@@ -28,7 +29,7 @@ def _save_session(user_id: str, summary: dict[str, Any], scores: list[float], du
         .insert({
             "user_id": user_id,
             "call_duration": duration_seconds,
-            "spoof_score": 1.0 - summary["avg_score"],
+            "spoof_score": summary["avg_score"],
             "percent_high_risk": (summary["high_risk_windows"] / len(scores) * 100) if scores else 0,
             "verdict": summary["verdict"],
         })
@@ -40,33 +41,23 @@ def _save_session(user_id: str, summary: dict[str, Any], scores: list[float], du
             {
                 "call_verification_id": session_id,
                 "timestamp_offset": index,
-                "spoof_score": 1.0 - score,
+                "spoof_score": score,
             }
             for index, score in enumerate(scores)
         ]).execute()
 
 
 def _prediction_score(model: Any, waveform: np.ndarray) -> float:
-    """Run an adapter or a simple local Torch model and return a bonafide score."""
+    """Run the ONNX adapter and return a spoof probability."""
     if not waveform.size:
         raise ValueError("Audio contains no samples.")
 
     waveform = np.nan_to_num(waveform.astype(np.float32, copy=False))
-    if hasattr(model, "predict"):
-        result = model.predict(waveform)
-    else:
-        # Local Torch modules are expected to return one probability/logit per sample.
-        import torch
-
-        with torch.inference_mode():
-            result = model(torch.from_numpy(waveform).unsqueeze(0))
-        if hasattr(result, "logits"):
-            result = result.logits
-        values = torch.as_tensor(result).detach().cpu().flatten()
-        if values.numel() == 1:
-            result = torch.sigmoid(values[0]).item()
-        else:
-            result = torch.softmax(values, dim=0)[0].item()
+    if not hasattr(model, "predict"):
+        raise TypeError("Configured inference model does not provide predict().")
+    # The deployed AST adapter returns class-0 (bonafide) probability. Public API scores
+    # are deliberately spoof probabilities so the chart and summary use one clear meaning.
+    result = 1.0 - float(model.predict(waveform))
 
     if isinstance(result, dict):
         result = result.get("score", result.get("bonafide_score"))
@@ -77,10 +68,10 @@ def _prediction_score(model: Any, waveform: np.ndarray) -> float:
 
 
 def _verdict(score: float) -> str:
-    return "real" if score >= settings.VERDICT_THRESHOLD else "fake"
+    return "fake" if score >= settings.VERDICT_THRESHOLD else "real"
 
 
-@router.post("/verify")
+@router.post("/verify", response_model=VerifyVoiceResponse)
 async def verify_voice(file: UploadFile = File(...), user=Depends(get_current_user)):
     if not file.filename:
         raise HTTPException(status_code=422, detail="An audio file is required.")
@@ -110,7 +101,8 @@ def _summary(scores: list[float]) -> dict[str, Any]:
     return {
         "total_windows": len(scores),
         "avg_score": average,
-        "high_risk_windows": sum(score < settings.VERDICT_THRESHOLD for score in scores),
+        "confidence": max(average, 1.0 - average),
+        "high_risk_windows": sum(score >= settings.VERDICT_THRESHOLD for score in scores),
         "verdict": _verdict(average),
     }
 
@@ -153,14 +145,14 @@ async def stream_inference(websocket: WebSocket) -> None:
                 next_window_end = window_frames
                 scores.clear()
                 smoothing.clear()
-                await websocket.send_json({"session_id": session_id, "action": "started"})
+                await websocket.send_json(StreamStarted(session_id=session_id).model_dump())
                 continue
 
             if action == "stop":
                 if session_id and message.get("session_id") not in (None, session_id):
                     await websocket.send_json({"action": "error", "detail": "session_id does not match."})
                     continue
-                await websocket.send_json({"session_id": session_id, "action": "done", "final_summary": _summary(scores)})
+                await websocket.send_json(StreamDone(session_id=session_id, final_summary=FinalSummary(**_summary(scores))).model_dump())
                 sent_done = True
                 await websocket.close()
                 return
@@ -194,21 +186,16 @@ async def stream_inference(websocket: WebSocket) -> None:
                 scores.append(score)
                 smoothing.append(score)
                 smoothed_score = float(np.mean(smoothing))
-                await websocket.send_json(
-                    {
-                        "session_id": session_id,
-                        "timestamp_ms": round(next_window_end * 1000 / settings.SAMPLE_RATE),
-                        "window_start_ms": round(start_frame * 1000 / settings.SAMPLE_RATE),
-                        "window_end_ms": round(next_window_end * 1000 / settings.SAMPLE_RATE),
-                        "score": score,
-                        "smoothed_score": smoothed_score,
-                        "verdict": _verdict(smoothed_score),
-                        "buffer_info": {
-                            "total_frames_received": total_frames,
-                            "windows_processed": len(scores),
-                        },
-                    }
-                )
+                await websocket.send_json(StreamScoreEvent(
+                    session_id=session_id,
+                    timestamp_ms=round(next_window_end * 1000 / settings.SAMPLE_RATE),
+                    window_start_ms=round(start_frame * 1000 / settings.SAMPLE_RATE),
+                    window_end_ms=round(next_window_end * 1000 / settings.SAMPLE_RATE),
+                    score=score,
+                    smoothed_score=smoothed_score,
+                    confidence=max(smoothed_score, 1.0 - smoothed_score),
+                    verdict=_verdict(smoothed_score),
+                ).model_dump())
                 next_window_end += hop_frames
 
             # Retain only enough audio for the next overlapping window.
@@ -222,38 +209,6 @@ async def stream_inference(websocket: WebSocket) -> None:
         if session_id and not sent_done:
             # The socket may already be gone; no final payload can be delivered then.
             try:
-                await websocket.send_json({"session_id": session_id, "action": "done", "final_summary": _summary(scores)})
+                await websocket.send_json(StreamDone(session_id=session_id, final_summary=FinalSummary(**_summary(scores))).model_dump())
             except Exception:
                 pass
-
-
-@router.websocket("/ws/stream")
-async def stream_binary_compat(websocket: WebSocket) -> None:
-    """Compatibility endpoint for microphone clients sending raw float32 frames."""
-    await websocket.accept()
-    from app.ml_integration.sliding_window import SlidingWindowInference
-
-    pipeline = SlidingWindowInference(
-        get_model(),
-        sample_rate=settings.SAMPLE_RATE,
-        window_seconds=settings.WINDOW_SIZE_MS / 1000,
-        hop_seconds=settings.HOP_SIZE_MS / 1000,
-        smoothing_window=settings.SCORE_SMOOTHING_WINDOWS,
-    )
-    try:
-        while True:
-            raw = await websocket.receive_bytes()
-            usable = len(raw) - (len(raw) % 4)
-            if usable <= 0:
-                continue
-            for score in pipeline.add_chunk(np.frombuffer(raw[:usable], dtype="<f4")):
-                await websocket.send_json({
-                    "score": float(score),
-                    "smoothed_score": float(score),
-                    "spoof_score": float(1.0 - score),
-                    "verdict": _verdict(float(score)),
-                })
-    except WebSocketDisconnect:
-        pass
-    finally:
-        pipeline.reset()
