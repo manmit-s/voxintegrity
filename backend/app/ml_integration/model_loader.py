@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from scipy.signal import stft
 
 from app.core.config import settings
 
@@ -30,40 +31,6 @@ class NeutralFallbackModel:
         return 0.5
 
 
-class HuggingFaceAudioClassifier:
-    """Small adapter that exposes a common ``predict(waveform)`` interface."""
-
-    def __init__(self, model: Any, feature_extractor: Any) -> None:
-        self.model = model.eval()
-        self.feature_extractor = feature_extractor
-        self.id2label = {
-            int(key): str(value).lower()
-            for key, value in getattr(model.config, "id2label", {}).items()
-        }
-
-    def predict(self, waveform: np.ndarray) -> float:
-        import torch
-
-        samples = np.asarray(waveform, dtype=np.float32).reshape(-1)
-        inputs = self.feature_extractor(
-            samples, sampling_rate=settings.SAMPLE_RATE, return_tensors="pt", padding=True
-        )
-        with torch.inference_mode():
-            logits = self.model(**inputs).logits[0]
-            probabilities = torch.softmax(logits, dim=-1).detach().cpu().numpy()
-
-        # Model cards use different label spellings; identify the bonafide class
-        # from metadata instead of relying on a class index.
-        for index, label in self.id2label.items():
-            if any(token in label for token in ("bonafide", "bona_fide", "real", "genuine")):
-                return float(probabilities[index])
-        for index, label in self.id2label.items():
-            if any(token in label for token in ("spoof", "fake", "synthetic")):
-                return float(1.0 - probabilities[index])
-        # ASVspoof-style binary heads conventionally put bonafide in class 0.
-        return float(probabilities[0])
-
-
 class OnnxAudioClassifier:
     """Adapter for the exported AST ONNX graph and its external weight file."""
 
@@ -71,41 +38,124 @@ class OnnxAudioClassifier:
         import onnxruntime as ort
 
         available = set(ort.get_available_providers())
-        providers = [name for name in ("DmlExecutionProvider", "CPUExecutionProvider") if name in available]
+        providers: list[Any] = []
+        if "DmlExecutionProvider" in available:
+            providers.append(("DmlExecutionProvider", {"device_id": settings.DML_DEVICE_ID}))
+        if "CPUExecutionProvider" in available:
+            providers.append("CPUExecutionProvider")
         self.session = ort.InferenceSession(str(path), providers=providers or ["CPUExecutionProvider"])
+        self._ort = ort
+        self._model_path = path
+        self._cpu_session: Any | None = None
+        self.using_cpu_fallback = False
+        logger.info("ONNX Runtime providers: %s", self.session.get_providers())
         self.input_name = self.session.get_inputs()[0].name
         self.output_name = self.session.get_outputs()[0].name
         self.input_shape = self.session.get_inputs()[0].shape
+        self._mel_filter: np.ndarray | None = None
+        self._probe_directml()
+
+    def _switch_to_cpu(self) -> None:
+        self._cpu_session = self._ort.InferenceSession(
+            str(self._model_path), providers=["CPUExecutionProvider"]
+        )
+        self.session = self._cpu_session
+        self.using_cpu_fallback = True
+
+    def _probe_directml(self) -> None:
+        """Resolve the known DirectML graph incompatibility before a live capture starts."""
+        if "DmlExecutionProvider" not in self.session.get_providers():
+            return
+        shape = tuple(dimension if isinstance(dimension, int) else 1 for dimension in self.input_shape)
+        try:
+            self.session.run([self.output_name], {self.input_name: np.zeros(shape, dtype=np.float32)})
+        except Exception:
+            logger.warning("DirectML probe failed for this ONNX graph; using CPU ONNX Runtime.")
+            self._switch_to_cpu()
+
+    @staticmethod
+    def _slaney_mel_filter(sample_rate: int, n_fft: int, n_mels: int) -> np.ndarray:
+        """Build librosa-compatible Slaney-normalized triangular mel filters.
+
+        This intentionally avoids ``librosa.feature.melspectrogram``: with the current
+        environment it spends minutes in Numba compilation before an inference can start.
+        """
+        def hz_to_mel(freq: np.ndarray) -> np.ndarray:
+            f_sp = 200.0 / 3
+            min_log_hz = 1000.0
+            min_log_mel = min_log_hz / f_sp
+            logstep = np.log(6.4) / 27.0
+            result = freq / f_sp
+            mask = freq >= min_log_hz
+            result[mask] = min_log_mel + np.log(freq[mask] / min_log_hz) / logstep
+            return result
+
+        def mel_to_hz(mel: np.ndarray) -> np.ndarray:
+            f_sp = 200.0 / 3
+            min_log_hz = 1000.0
+            min_log_mel = min_log_hz / f_sp
+            logstep = np.log(6.4) / 27.0
+            result = f_sp * mel
+            mask = mel >= min_log_mel
+            result[mask] = min_log_hz * np.exp(logstep * (mel[mask] - min_log_mel))
+            return result
+
+        mel_points = np.linspace(hz_to_mel(np.array([0.0]))[0], hz_to_mel(np.array([sample_rate / 2]))[0], n_mels + 2)
+        hz_points = mel_to_hz(mel_points)
+        fft_freqs = np.fft.rfftfreq(n_fft, 1 / sample_rate)
+        lower = (fft_freqs[None, :] - hz_points[:-2, None]) / (hz_points[1:-1, None] - hz_points[:-2, None])
+        upper = (hz_points[2:, None] - fft_freqs[None, :]) / (hz_points[2:, None] - hz_points[1:-1, None])
+        filters = np.maximum(0.0, np.minimum(lower, upper))
+        filters *= (2.0 / (hz_points[2:] - hz_points[:-2]))[:, None]
+        return filters.astype(np.float32)
+
+    def _ast_features(self, samples: np.ndarray, frames: int, mel_bins: int) -> np.ndarray:
+        n_fft = 400
+        # librosa defaults to a centered, reflection-padded STFT with a Hann window.
+        padded = np.pad(samples, (n_fft // 2, n_fft // 2), mode="reflect")
+        _, _, spectrum = stft(
+            padded,
+            fs=settings.SAMPLE_RATE,
+            window="hann",
+            nperseg=n_fft,
+            noverlap=n_fft - 160,
+            nfft=n_fft,
+            boundary=None,
+            padded=False,
+        )
+        if self._mel_filter is None or self._mel_filter.shape[0] != mel_bins:
+            self._mel_filter = self._slaney_mel_filter(settings.SAMPLE_RATE, n_fft, mel_bins)
+        mel = self._mel_filter @ np.square(np.abs(spectrum))
+        db = 10.0 * np.log10(np.maximum(mel, 1e-10))
+        db -= np.max(db)
+        features = db.T
+        if features.shape[0] < frames:
+            features = np.pad(features, ((0, frames - features.shape[0]), (0, 0)))
+        return features[:frames].astype(np.float32, copy=False)
 
     def predict(self, waveform: np.ndarray) -> float:
-        import librosa
-
         samples = np.asarray(waveform, dtype=np.float32).reshape(-1)
         # The exported AST graph accepts [batch, frames, mel_bins], rather than
         # waveform samples. Match the standard AST 16 kHz frontend.
         if len(self.input_shape) == 3:
             frames = int(self.input_shape[1]) if isinstance(self.input_shape[1], int) else 1024
             mel_bins = int(self.input_shape[2]) if isinstance(self.input_shape[2], int) else 128
-            mel = librosa.feature.melspectrogram(
-                y=samples,
-                sr=settings.SAMPLE_RATE,
-                n_fft=400,
-                hop_length=160,
-                n_mels=mel_bins,
-                power=2.0,
-            )
-            features = librosa.power_to_db(mel, ref=np.max).T
-            if features.shape[0] < frames:
-                features = np.pad(features, ((0, frames - features.shape[0]), (0, 0)))
-            else:
-                features = features[:frames]
-            samples = features.astype(np.float32, copy=False)
+            samples = self._ast_features(samples, frames, mel_bins)
             model_input = samples[None, :, :]
         else:
             model_input = samples[None, :]
-        output = np.asarray(
-            self.session.run([self.output_name], {self.input_name: model_input})[0]
-        ).reshape(-1)
+        try:
+            raw_output = self.session.run([self.output_name], {self.input_name: model_input})[0]
+        except Exception:
+            # This exported graph currently fails in DirectML's Reshape implementation
+            # (node_view_2, 0x8007023E) on the RTX 3050 driver/runtime. Retain DirectML
+            # as the preferred path but keep the demo functional with ORT CPU execution.
+            if self.using_cpu_fallback or "DmlExecutionProvider" not in self.session.get_providers():
+                raise
+            logger.exception("DirectML inference failed; switching this ONNX session to CPU")
+            self._switch_to_cpu()
+            raw_output = self.session.run([self.output_name], {self.input_name: model_input})[0]
+        output = np.asarray(raw_output).reshape(-1)
         if output.size == 1:
             value = float(output[0])
             return value if 0.0 <= value <= 1.0 else float(1.0 / (1.0 + np.exp(-value)))
@@ -115,50 +165,18 @@ class OnnxAudioClassifier:
         return float(probabilities[index])
 
 
-def _load_local_model(path: Path) -> Any:
-    import torch
-
-    try:
-        model = torch.jit.load(str(path), map_location="cpu")
-    except RuntimeError:
-        model = torch.load(str(path), map_location="cpu")
-
-    if isinstance(model, dict) and "model" in model:
-        model = model["model"]
-    if not hasattr(model, "eval"):
-        raise TypeError("Local model must be a Torch module or a checkpoint containing 'model'.")
-    return model.eval()
-
-
-def _load_huggingface_model() -> HuggingFaceAudioClassifier:
-    from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
-
-    feature_extractor = AutoFeatureExtractor.from_pretrained(
-        settings.MODEL_HF_ID, local_files_only=settings.MODEL_HF_LOCAL_FILES_ONLY
-    )
-    model = AutoModelForAudioClassification.from_pretrained(
-        settings.MODEL_HF_ID,
-        trust_remote_code=True,
-        local_files_only=settings.MODEL_HF_LOCAL_FILES_ONLY,
-    )
-    return HuggingFaceAudioClassifier(model, feature_extractor)
-
-
 def _load(path: Path | None = None) -> tuple[Any, str]:
     model_path = path or settings.resolved_model_path()
     if model_path.exists():
         try:
             if model_path.suffix.lower() == ".onnx":
                 return OnnxAudioClassifier(model_path), str(model_path)
-            return _load_local_model(model_path), str(model_path)
+            raise ValueError("Only the supported ONNX deployment artifact may be loaded.")
         except Exception:
-            logger.exception("Unable to load local model from %s; trying HF baseline", model_path)
-
-    try:
-        return _load_huggingface_model(), settings.MODEL_HF_ID
-    except Exception:
-        logger.exception("Unable to load Hugging Face baseline; using neutral fallback")
-        return NeutralFallbackModel(), "neutral-fallback (no trained model available)"
+            logger.exception("Unable to load local ONNX model from %s", model_path)
+    else:
+        logger.error("Configured ONNX model is missing: %s", model_path)
+    return NeutralFallbackModel(), "neutral-fallback (configured ONNX model unavailable)"
 
 
 def get_model() -> Any:
