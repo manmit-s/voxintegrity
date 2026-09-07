@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vaani Kavach — Voice Integrity Ingestion</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-lowest": "#0A0D12",
+            "surface-low": "#10141B",
+            "surface": "#141A22",
+            "surface-high": "#1C2430",
+            "surface-highest": "#263040",
+            "accent": "#00F0A8",
+            "accent-dim": "rgba(0, 240, 168, 0.12)",
+            "accent-glow": "rgba(0, 240, 168, 0.25)",
+            "on-surface": "#E5E9F0",
+            "on-surface-variant": "#8E9BAE",
+            "outline-dim": "#222B38",
+            "danger": "#FF6B6B"
+          },
+          fontFamily: {
+            "heading": ["Space Grotesk", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface-lowest text-on-surface font-mono antialiased min-h-screen flex flex-col justify-between selection:bg-accent selection:text-surface-lowest">
+<!-- REFINED, MINIMAL HEADER -->
+<header class="w-full border-b border-outline-dim bg-surface-lowest/90 backdrop-blur-md sticky top-0 z-50">
+<div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.5)]"></div>
+<span class="font-heading font-bold text-lg tracking-tight text-on-surface">VAANI KAVACH</span>
+<span class="text-outline-dim text-xs">/</span>
+<span class="text-on-surface-variant text-xs hidden sm:inline tracking-normal font-sans">Voice-Cloning Detection</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-2.5 py-1 rounded bg-surface-low border border-outline-dim text-xs text-on-surface-variant">
+<span class="relative flex h-2 w-2 items-center justify-center"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-400"></span></span>
+<span>System Ready</span>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN SINGLE-TASK COCKPIT -->
+<main class="flex-1 flex flex-col justify-center max-w-6xl mx-auto w-full px-6 py-10">
+<!-- Title & Purpose -->
+<div class="mb-10 text-center max-w-2xl mx-auto flex flex-col gap-3">
+<h1 class="font-heading font-bold text-3xl sm:text-4xl text-on-surface tracking-tight">Signal Input &amp; Capture</h1>
+<p class="text-sm text-on-surface-variant leading-relaxed font-sans">
+        Select an audio source to begin synthetic acoustic anomaly detection. Real-time inference utilizes a 250ms analysis window stride.
+      </p>
+</div>
+<!-- Dual Modality Cards (Deliberate & Breathing) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+<!-- MODALITY A: LIVE MICROPHONE MONITOR -->
+<div class="bg-surface-low border border-outline-dim rounded-xl p-7 flex flex-col justify-between hover:border-surface-highest transition-colors">
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Channel 01</span>
+<span class="text-xs text-on-surface-variant flex items-center gap-1.5" id="mic-status-label">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant" id="mic-status-dot"></span>
+<span id="mic-status-text">Idle</span>
+</span>
+</div>
+<div>
+<h2 class="font-heading font-semibold text-xl text-on-surface mb-2">Live Microphone</h2>
+<p class="text-xs text-on-surface-variant leading-relaxed font-sans">
+              Stream direct audio input via system mic. Audio chunks are analyzed continuously in 250ms strides.
+            </p>
+</div>
+<!-- Clean Level Meter -->
+<div class="bg-surface rounded-lg p-4 border border-outline-dim flex flex-col gap-3">
+<div class="flex justify-between items-center text-xs">
+<span class="text-on-surface-variant text-[11px]">INPUT LEVEL</span>
+<span class="text-on-surface-variant text-[11px] font-mono" id="vu-db">STANDBY</span>
+</div>
+<div class="flex gap-1 h-3 items-center" id="vu-meter">
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+<div class="flex-1 h-full rounded-sm bg-surface-high transition-colors vu-bar"></div>
+</div>
+</div>
+</div>
+<div class="pt-8">
+<button class="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-semibold text-xs tracking-wider uppercase py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-all cursor-pointer font-heading shadow-sm active:translate-y-px" id="btn-arm-mic"><span class="material-symbols-outlined text-[18px]">mic</span><span id="btn-mic-label">Arm Microphone</span></button>
+</div>
+</div>
+<!-- MODALITY B: AUDIO FILE UPLOAD -->
+<div class="bg-surface-low border border-outline-dim rounded-xl p-7 flex flex-col justify-between hover:border-surface-highest transition-colors">
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<span class="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Channel 02</span>
+<span class="text-xs text-on-surface-variant">Max 25 MB</span>
+</div>
+<div>
+<h2 class="font-heading font-semibold text-xl text-on-surface mb-2">Audio File Upload</h2>
+<p class="text-xs text-on-surface-variant leading-relaxed font-sans">
+              Inspect recorded voice samples for vocoder phase artifacts and clone residuals.
+            </p>
+</div>
+<!-- Drag and Drop Chamber -->
+<div class="bg-surface rounded-lg p-6 border border-dashed border-outline-dim hover:border-teal-400/50 flex flex-col items-center justify-center text-center cursor-pointer transition-colors group" id="drop-zone"><div class="w-10 h-10 rounded-full bg-surface-high flex items-center justify-center text-on-surface-variant group-hover:text-teal-400 transition-colors mb-3"><span class="material-symbols-outlined text-[22px]">upload_file</span></div><p class="text-xs font-heading font-medium text-on-surface mb-1" id="file-drop-text">Drag &amp; drop audio file here</p><p class="text-[11px] text-on-surface-variant font-sans">Supports WAV, MP3, FLAC, M4A</p><input accept=".wav,.mp3,.flac,.m4a" class="hidden" id="file-input" type="file"/></div>
+</div>
+<div class="pt-8">
+<button class="w-full bg-surface-high hover:bg-surface-highest text-on-surface font-medium text-xs tracking-wider uppercase py-3.5 px-4 rounded-lg flex items-center justify-center gap-2 border border-outline-dim transition-all cursor-pointer font-heading" id="btn-browse-file">
+<span class="material-symbols-outlined text-[18px]">folder_open</span>
+<span>Browse Audio File</span>
+</button>
+</div>
+</div>
+</div>
+<!-- REFINED TECHNICAL NOTICE -->
+<div class="mt-8 text-center">
+<span class="inline-flex items-center gap-2 text-xs text-on-surface-variant/80 px-3.5 py-1 rounded-full bg-surface-low border border-outline-dim"><span class="material-symbols-outlined text-[14px] text-teal-400">shield_with_heart</span><span>Standard 250ms analysis window stride</span></span>
+</div>
+</main>
+<!-- CLEAN, MINIMAL FOOTER -->
+<footer class="w-full border-t border-outline-dim bg-surface-lowest py-3 text-xs text-on-surface-variant">
+<div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+<span>VAANI KAVACH — Voice Signal Integrity</span>
+<span class="text-[11px] text-on-surface-variant/70 font-sans flex items-center gap-1.5"><span class="material-symbols-outlined text-[13px] text-teal-400">verified</span>Ready for audio ingestion</span>
+</div>
+</footer>
+<script>
+    (function() {
+      // Microphone Arm Interaction
+      const armBtn = document.getElementById('btn-arm-mic');
+      const micLabel = document.getElementById('btn-mic-label');
+      const micStatusLabel = document.getElementById('mic-status-text');
+      const micStatusDot = document.getElementById('mic-status-dot');
+      const vuDb = document.getElementById('vu-db');
+      const vuBars = document.querySelectorAll('.vu-bar');
+      
+      let isArmed = false;
+      let animInterval = null;
+
+      armBtn.addEventListener('click', function() {
+        isArmed = !isArmed;
+        if (isArmed) {
+          armBtn.classList.remove('bg-accent', 'hover:bg-[#00dab5]', 'text-surface-lowest');
+          armBtn.classList.add('bg-danger', 'hover:bg-red-600', 'text-white');
+          armBtn.querySelector('.material-symbols-outlined').textContent = 'stop_circle';
+          micLabel.textContent = 'Stop Monitoring';
+          
+          micStatusLabel.textContent = 'Monitoring';
+          micStatusDot.classList.remove('bg-on-surface-variant');
+          micStatusDot.classList.add('bg-accent', 'animate-pulse');
+
+          // Simulated modest meter levels
+          animInterval = setInterval(function() {
+            const activeCount = Math.floor(Math.random() * 5) + 2;
+            const dbVal = (-28 + Math.floor(Math.random() * 12));
+            vuDb.textContent = `${dbVal} dBFS`;
+            vuDb.classList.add('text-accent');
+            vuBars.forEach((bar, idx) => {
+              if (idx < activeCount) {
+                bar.classList.add('bg-accent');
+                bar.classList.remove('bg-surface-high');
+              } else {
+                bar.classList.remove('bg-accent');
+                bar.classList.add('bg-surface-high');
+              }
+            });
+          }, 180);
+        } else {
+          armBtn.classList.add('bg-accent', 'hover:bg-[#00dab5]', 'text-surface-lowest');
+          armBtn.classList.remove('bg-danger', 'hover:bg-red-600', 'text-white');
+          armBtn.querySelector('.material-symbols-outlined').textContent = 'mic';
+          micLabel.textContent = 'Arm Microphone';
+
+          micStatusLabel.textContent = 'Idle';
+          micStatusDot.classList.remove('bg-accent', 'animate-pulse');
+          micStatusDot.classList.add('bg-on-surface-variant');
+
+          clearInterval(animInterval);
+          vuDb.textContent = 'STANDBY';
+          vuDb.classList.remove('text-accent');
+          vuBars.forEach(bar => {
+            bar.classList.remove('bg-accent');
+            bar.classList.add('bg-surface-high');
+          });
+        }
+      });
+
+      // File Browse & Drop Interaction
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input');
+      const browseBtn = document.getElementById('btn-browse-file');
+      const dropText = document.getElementById('file-drop-text');
+
+      browseBtn.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('click', () => fileInput.click());
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-accent');
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-accent');
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-accent');
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          dropText.textContent = e.dataTransfer.files[0].name;
+          dropText.classList.add('text-accent');
+        }
+      });
+
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files && fileInput.files.length > 0) {
+          dropText.textContent = fileInput.files[0].name;
+          dropText.classList.add('text-accent');
+        }
+      });
+    })();
+  </script>
+</body></html>

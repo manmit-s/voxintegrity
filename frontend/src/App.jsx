@@ -1,13 +1,16 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import React from 'react'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import StitchScreen from './pages/StitchScreen'
+import './stitch-host.css'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<h1>Vaani Kavach - Voice Protection</h1>} />
-        <Route path="/verify" element={<div>Verify Voice</div>} />
-        <Route path="/history" element={<div>History</div>} />
+        <Route path="/" element={<StitchScreen screen="capture" />} />
+        <Route path="/verify" element={<StitchScreen screen="capture" />} />
+        <Route path="/telemetry" element={<StitchScreen screen="telemetry" />} />
+        <Route path="/summary" element={<StitchScreen screen="summary" />} />
       </Routes>
     </BrowserRouter>
   )
