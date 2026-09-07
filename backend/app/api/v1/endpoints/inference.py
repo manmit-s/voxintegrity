@@ -9,13 +9,41 @@ from collections import deque
 from typing import Any
 
 import numpy as np
-from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 
 from app.core.config import settings
+from app.core.security import get_current_user
+from app.db.supabase import supabase
 from app.ml_integration.preprocessor import preprocess_audio
 from app.ml_integration.model_loader import get_model, get_model_name
 
 router = APIRouter()
+
+
+def _save_session(user_id: str, summary: dict[str, Any], scores: list[float], duration_seconds: float | None = None):
+    if supabase is None:
+        return
+    session = (
+        supabase.table("verification_sessions")
+        .insert({
+            "user_id": user_id,
+            "call_duration": duration_seconds,
+            "spoof_score": 1.0 - summary["avg_score"],
+            "percent_high_risk": (summary["high_risk_windows"] / len(scores) * 100) if scores else 0,
+            "verdict": summary["verdict"],
+        })
+        .execute()
+    )
+    if session.data and scores:
+        session_id = session.data[0]["id"]
+        supabase.table("score_events").insert([
+            {
+                "call_verification_id": session_id,
+                "timestamp_offset": index,
+                "spoof_score": 1.0 - score,
+            }
+            for index, score in enumerate(scores)
+        ]).execute()
 
 
 def _prediction_score(model: Any, waveform: np.ndarray) -> float:
@@ -53,14 +81,14 @@ def _verdict(score: float) -> str:
 
 
 @router.post("/verify")
-async def verify_voice(file: UploadFile = File(...)):
+async def verify_voice(file: UploadFile = File(...), user=Depends(get_current_user)):
     if not file.filename:
         raise HTTPException(status_code=422, detail="An audio file is required.")
     try:
         waveform = await preprocess_audio(file)
         model = get_model()
         score = await asyncio.to_thread(_prediction_score, model, waveform)
-        return {
+        result = {
             "filename": file.filename,
             "score": score,
             "verdict": _verdict(score),
@@ -69,6 +97,8 @@ async def verify_voice(file: UploadFile = File(...)):
             "window_size_ms": settings.WINDOW_SIZE_MS,
             "hop_size_ms": settings.HOP_SIZE_MS,
         }
+        _save_session(str(user.id), _summary([score]), [score])
+        return result
     except (ValueError, RuntimeError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:

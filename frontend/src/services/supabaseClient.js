@@ -7,4 +7,16 @@ export const supabase = (supabaseUrl && supabaseKey)
   ? createClient(supabaseUrl, supabaseKey)
   : null
 
+export const signUp = (email, password) => {
+  if (!supabase) throw new Error('Supabase is not configured')
+  return supabase.auth.signUp({ email, password })
+}
+
+export const signIn = (email, password) => {
+  if (!supabase) throw new Error('Supabase is not configured')
+  return supabase.auth.signInWithPassword({ email, password })
+}
+
+export const signOut = () => supabase?.auth.signOut()
+
 export default supabase
