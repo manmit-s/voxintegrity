@@ -55,13 +55,12 @@ def _prediction_score(model: Any, waveform: np.ndarray) -> float:
     waveform = np.nan_to_num(waveform.astype(np.float32, copy=False))
     if not hasattr(model, "predict"):
         raise TypeError("Configured inference model does not provide predict().")
-    # The deployed AST adapter returns class-0 (bonafide) probability. Public API scores
-    # are deliberately spoof probabilities so the chart and summary use one clear meaning.
-    result = 1.0 - float(model.predict(waveform))
-
+    result = model.predict(waveform)
     if isinstance(result, dict):
         result = result.get("score", result.get("bonafide_score"))
-    score = float(result)
+    # The deployed AST adapter returns class-0 (bonafide) probability. Public API scores
+    # are deliberately spoof probabilities so the chart and summary use one clear meaning.
+    score = 1.0 - float(result)
     if not np.isfinite(score):
         raise ValueError("Model returned a non-finite score.")
     return float(np.clip(score, 0.0, 1.0))

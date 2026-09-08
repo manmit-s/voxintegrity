@@ -1,8 +1,14 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.ml_integration.model_loader import get_model_name
+
+# Make model/execution-provider status visible on the backend console; a silent
+# DirectML-to-CPU fallback is otherwise indistinguishable from a healthy GPU run.
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
 app = FastAPI(title=settings.PROJECT_NAME, version="0.1.0")
 

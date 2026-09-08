@@ -15,8 +15,12 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_KEY: str = ""
     # Resolve this relative to the repository root when no absolute path is supplied.
-    # This ONNX graph uses the sibling ast_finetuned_fp32.onnx.data file for weights.
-    MODEL_PATH: str = "ml_pipeline/weights/ast_finetuned_fp32.onnx"
+    # This DML-safe export constant-folds every Reshape shape tensor (batch=1) so the
+    # DirectML execution provider can run the graph; it shares the sibling
+    # ast_finetuned_fp32.onnx.data weight file and also runs on plain CPU ORT.
+    MODEL_PATH: str = "ml_pipeline/weights/ast_finetuned_fp32_dml.onnx"
+    # Fallback export with runtime-computed Reshape shapes (DirectML-incompatible).
+    MODEL_FALLBACK_PATH: str = "ml_pipeline/weights/ast_finetuned_fp32.onnx"
     # DirectML adapter ordinal. Set DML_DEVICE_ID in .env if the RTX is not adapter 0.
     DML_DEVICE_ID: int = 0
     WINDOW_SIZE_MS: int = 2000

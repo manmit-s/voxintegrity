@@ -14,3 +14,8 @@ PLAN_manmit.md
 .vscode/
 frontend/dist/
 frontend/build/
+
+# local test audio samples — keep these out of git
+test/samples/
+test/samples/*.mp3
+test/samples/*.wav
