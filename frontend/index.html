@@ -3,8 +3,80 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#111319" />
+    <meta name="theme-color" content="#0b0e13" />
     <title>Vaani Kavach | Voice Integrity Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <style>
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      ::-webkit-scrollbar { display: none; }
+    </style>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      // Merged theme of the two Vaani Kavach mockup designs (capture + telemetry/summary).
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'surface-lowest': '#0A0D12',
+              'surface-low': '#10141B',
+              'surface': '#141A22',
+              'surface-high': '#1C2430',
+              'surface-highest': '#263040',
+              'accent': '#00F0A8',
+              'accent-dim': 'rgba(0, 240, 168, 0.12)',
+              'accent-glow': 'rgba(0, 240, 168, 0.25)',
+              'danger': '#FF6B6B',
+              'surface-container-lowest': '#0b0e13',
+              'surface-container-low': '#191c21',
+              'surface-container': '#1d2025',
+              'surface-container-high': '#272a30',
+              'surface-container-highest': '#32353b',
+              'surface-variant': '#32353b',
+              'outline': '#84958a',
+              'outline-variant': '#3b4a41',
+              'outline-dim': '#222B38',
+              'on-surface': '#e1e2ea',
+              'on-surface-variant': '#8E9BAE',
+              'primary-container': '#00f0a8',
+              'primary': '#b7ffd9',
+              'on-primary-container': '#006847',
+              'secondary': '#ffb4a6'
+            },
+            fontFamily: {
+              heading: ['Space Grotesk', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+              'label-caps': ['JetBrains Mono'],
+              'telemetry-micro': ['JetBrains Mono'],
+              'telemetry-sm': ['JetBrains Mono'],
+              'telemetry-lg': ['JetBrains Mono'],
+              'telemetry-base': ['JetBrains Mono'],
+              'body-base': ['JetBrains Mono'],
+              'headline-sm': ['Space Grotesk'],
+              'headline-lg': ['Space Grotesk'],
+              'verdict-xl': ['Space Grotesk']
+            },
+            fontSize: {
+              'label-caps': ['11px', { lineHeight: '14px', letterSpacing: '0.12em', fontWeight: '600' }],
+              'telemetry-sm': ['13px', { lineHeight: '18px', letterSpacing: '0.01em', fontWeight: '400' }],
+              'telemetry-lg': ['28px', { lineHeight: '32px', letterSpacing: '-0.02em', fontWeight: '600' }],
+              'telemetry-micro': ['10px', { lineHeight: '14px', letterSpacing: '0.08em', fontWeight: '500' }],
+              'telemetry-base': ['15px', { lineHeight: '20px', letterSpacing: '0em', fontWeight: '500' }],
+              'body-base': ['14px', { lineHeight: '22px', letterSpacing: '-0.01em', fontWeight: '400' }],
+              'headline-sm': ['18px', { lineHeight: '24px', letterSpacing: '-0.01em', fontWeight: '500' }],
+              'headline-lg': ['24px', { lineHeight: '30px', letterSpacing: '-0.02em', fontWeight: '600' }],
+              'verdict-xl': ['48px', { lineHeight: '52px', letterSpacing: '-0.03em', fontWeight: '700' }]
+            },
+            spacing: {
+              'scale-1': '0.125rem', 'scale-2': '0.25rem', 'scale-3': '0.5rem', 'scale-4': '0.75rem',
+              'scale-5': '1rem', 'scale-6': '1.5rem', 'scale-7': '2rem', 'scale-8': '3rem'
+            }
+          }
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
